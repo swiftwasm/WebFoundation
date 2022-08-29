@@ -18,14 +18,14 @@ import Foundation
 /// `URLSession` for more information about receiving the content
 /// data for a URL load.
 open class URLResponse: NSObject {
-    open override func copy() -> Any {
-        return copy(with: nil)
+    override open func copy() -> Any {
+        copy(with: nil)
     }
-    
-    open func copy(with zone: NSZone? = nil) -> Any {
-        return self
+
+    open func copy(with _: NSZone? = nil) -> Any {
+        self
     }
-    
+
     /// Initialize an URLResponse with the provided values.
     ///
     /// This is the designated initializer for URLResponse.
@@ -36,17 +36,16 @@ open class URLResponse: NSObject {
     /// - Returns: The initialized URLResponse.
     public init(url: URL, mimeType: String?, expectedContentLength length: Int, textEncodingName name: String?) {
         self.url = url
-        self.mimeType = mimeType
-        self.expectedContentLength = Int64(length)
-        self.textEncodingName = name
+        self.mimeType = mimeType ?? "application/octet-stream"
+        expectedContentLength = Int64(length)
+        textEncodingName = name
         let c = url.lastPathComponent
-        self.suggestedFilename = c.isEmpty ? "Unknown" : c
+        suggestedFilename = c.isEmpty ? "Unknown" : c
     }
-    
+
     /// The URL of the receiver.
     open private(set) var url: URL?
 
-    
     /// The MIME type of the receiver.
     ///
     /// The MIME type is based on the information provided
@@ -56,7 +55,7 @@ open class URLResponse: NSObject {
     /// incorrectly or imprecisely. An attempt to guess the MIME type may
     /// be made if the origin source did not report any such information.
     open fileprivate(set) var mimeType: String?
-    
+
     /// The expected content length of the receiver.
     ///
     /// Some protocol implementations report a content length
@@ -70,7 +69,7 @@ open class URLResponse: NSObject {
     /// there is no expectation that can be arrived at regarding expected
     /// content length.
     open fileprivate(set) var expectedContentLength: Int64
-    
+
     /// The name of the text encoding of the receiver.
     ///
     /// This name will be the actual string reported by the
@@ -79,7 +78,7 @@ open class URLResponse: NSObject {
     /// NSStringEncoding or CFStringEncoding using the methods and
     /// functions made available in the appropriate framework.
     open fileprivate(set) var textEncodingName: String?
-    
+
     /// A suggested filename if the resource were saved to disk.
     ///
     /// The method first checks if the server has specified a filename
@@ -88,40 +87,11 @@ open class URLResponse: NSObject {
     /// component of the URL. If no valid filename can be obtained using
     /// the last path component, this method uses the URL's host as the
     /// filename. If the URL's host can't be converted to a valid
-    /// filename, the filename "unknown" is used. In mose cases, this
+    /// filename, the filename "unknown" is used. In most cases, this
     /// method appends the proper file extension based on the MIME type.
     ///
     /// This method always returns a valid filename.
     open fileprivate(set) var suggestedFilename: String?
-
-    open override func isEqual(_ value: Any?) -> Bool {
-        switch value {
-        case let other as URLResponse:
-            return self.isEqual(to: other)
-        default:
-            return false
-        }
-    }
-
-    private func isEqual(to other: URLResponse) -> Bool {
-        if self === other {
-            return true
-        }
-
-        return self.url == other.url &&
-                self.expectedContentLength == other.expectedContentLength &&
-                self.mimeType == other.mimeType &&
-                self.textEncodingName == other.textEncodingName
-    }
-
-    open override var hash: Int {
-        var hasher = Hasher()
-        hasher.combine(url)
-        hasher.combine(expectedContentLength)
-        hasher.combine(mimeType)
-        hasher.combine(textEncodingName)
-        return hasher.finalize()
-    }
 }
 
 /// A Response to an HTTP URL load.
@@ -130,25 +100,25 @@ open class URLResponse: NSObject {
 /// HTTP URL load. It is a specialization of URLResponse which
 /// provides conveniences for accessing information specific to HTTP
 /// protocol responses.
-open class HTTPURLResponse : URLResponse {
-    
+open class HTTPURLResponse: URLResponse {
     /// Initializer for HTTPURLResponse objects.
     ///
     /// - Parameter url: the URL from which the response was generated.
     /// - Parameter statusCode: an HTTP status code.
-    /// - Parameter httpVersion: The version of the HTTP response as represented by the server.  This is typically represented as "HTTP/1.1".
+    /// - Parameter httpVersion: The version of the HTTP response as represented by the server.
+    /// This is typically represented as "HTTP/1.1".
     /// - Parameter headerFields: A dictionary representing the header keys and values of the server response.
     /// - Returns: the instance of the object, or `nil` if an error occurred during initialization.
-    public init?(url: URL, statusCode: Int, httpVersion: String?, headerFields: [String : String]?) {
+    public init?(url: URL, statusCode: Int, httpVersion _: String?, headerFields: [String: String]?) {
         self.statusCode = statusCode
 
-        self._allHeaderFields = {
+        _allHeaderFields = {
             // Canonicalize the header fields by capitalizing the field names, but not X- Headers
             // This matches the behaviour of Darwin.
             guard let headerFields = headerFields else { return [:] }
             var canonicalizedFields: [String: String] = [:]
 
-            for (key, value) in headerFields  {
+            for (key, value) in headerFields {
                 if key.isEmpty { continue }
                 if key.hasPrefix("x-") || key.hasPrefix("X-") {
                     canonicalizedFields[key] = value
@@ -169,10 +139,10 @@ open class HTTPURLResponse : URLResponse {
             textEncodingName = type.textEncoding?.lowercased()
         }
     }
-    
+
     /// The HTTP status code of the receiver.
     public let statusCode: Int
-    
+
     /// Returns a dictionary containing all the HTTP header fields
     /// of the receiver.
     ///
@@ -187,12 +157,12 @@ open class HTTPURLResponse : URLResponse {
     /// - Important: This is an *experimental* change from the
     /// `[NSObject: AnyObject]` type that Darwin Foundation uses.
     private let _allHeaderFields: [String: String]
-    public var allHeaderFields: [AnyHashable : Any] {
-        _allHeaderFields as [AnyHashable : Any]
+    public var allHeaderFields: [AnyHashable: Any] {
+        _allHeaderFields as [AnyHashable: Any]
     }
 
     public func value(forHTTPHeaderField field: String) -> String? {
-        return valueForCaseInsensitiveKey(field, fields: _allHeaderFields)
+        valueForCaseInsensitiveKey(field, fields: _allHeaderFields)
     }
 
     /// Convenience method which returns a localized string
@@ -203,7 +173,7 @@ open class HTTPURLResponse : URLResponse {
         case 100: return "Continue"
         case 101: return "Switching Protocols"
         case 102: return "Processing"
-        case 100...199: return "Informational"
+        case 100 ... 199: return "Informational"
         case 200: return "OK"
         case 201: return "Created"
         case 202: return "Accepted"
@@ -214,7 +184,7 @@ open class HTTPURLResponse : URLResponse {
         case 207: return "Multi-Status"
         case 208: return "Already Reported"
         case 226: return "IM Used"
-        case 200...299: return "Success"
+        case 200 ... 299: return "Success"
         case 300: return "Multiple Choices"
         case 301: return "Moved Permanently"
         case 302: return "Found"
@@ -223,7 +193,7 @@ open class HTTPURLResponse : URLResponse {
         case 305: return "Use Proxy"
         case 307: return "Temporary Redirect"
         case 308: return "Permanent Redirect"
-        case 300...399: return "Redirection"
+        case 300 ... 399: return "Redirection"
         case 400: return "Bad Request"
         case 401: return "Unauthorized"
         case 402: return "Payment Required"
@@ -251,7 +221,7 @@ open class HTTPURLResponse : URLResponse {
         case 429: return "Too Many Requests"
         case 431: return "Request Header Fields Too Large"
         case 451: return "Unavailable For Legal Reasons"
-        case 400...499: return "Client Error"
+        case 400 ... 499: return "Client Error"
         case 500: return "Internal Server Error"
         case 501: return "Not Implemented"
         case 502: return "Bad Gateway"
@@ -263,7 +233,7 @@ open class HTTPURLResponse : URLResponse {
         case 508: return "Loop Detected"
         case 510: return "Not Extended"
         case 511: return "Network Authentication Required"
-        case 500...599: return "Server Error"
+        case 500 ... 599: return "Server Error"
         default: return "Server Error"
         }
     }
@@ -271,10 +241,19 @@ open class HTTPURLResponse : URLResponse {
     /// A string that represents the contents of the HTTPURLResponse Object.
     /// This property is intended to produce readable output.
     override open var description: String {
-        var result = "<\(type(of: self)) \(Unmanaged.passUnretained(self).toOpaque())> { URL: \(url!.absoluteString) }{ status: \(statusCode), headers {\n"
+        var result =
+            """
+            <\(
+                type(of: self)
+            ) \(
+                Unmanaged.passUnretained(self).toOpaque()
+            )> { URL: \(url!.absoluteString) }{ status: \(statusCode), headers {\n
+            """
         for key in _allHeaderFields.keys.sorted() {
             guard let value = _allHeaderFields[key] else { continue }
-            if((key.lowercased() == "content-disposition" && suggestedFilename != "Unknown") || key.lowercased() == "content-type") {
+            if (key.lowercased() == "content-disposition" && suggestedFilename != "Unknown") || key
+                .lowercased() == "content-type"
+            {
                 result += "   \"\(key)\" = \"\(value)\";\n"
             } else {
                 result += "   \"\(key)\" = \(value);\n"
@@ -292,34 +271,36 @@ open class HTTPURLResponse : URLResponse {
 /// The transfer length can only be derived when the Transfer-Encoding is identity (default).
 /// For compressed content (Content-Encoding other than identity), there is not way to derive the
 /// content length from the transfer length.
-private func getExpectedContentLength(fromHeaderFields headerFields: [String : String]?) -> Int64? {
+private func getExpectedContentLength(fromHeaderFields headerFields: [String: String]?) -> Int64? {
     guard
         let f = headerFields,
         let contentLengthS = valueForCaseInsensitiveKey("content-length", fields: f),
         let contentLength = Int64(contentLengthS)
-        else { return nil }
+    else { return nil }
     return contentLength
 }
+
 /// Parses the suggested filename from the `Content-Disposition` header.
 ///
 /// - SeeAlso: [RFC 2183](https://tools.ietf.org/html/rfc2183)
-private func getSuggestedFilename(fromHeaderFields headerFields: [String : String]?) -> String? {
+private func getSuggestedFilename(fromHeaderFields headerFields: [String: String]?) -> String? {
     // Typical use looks like this:
     //     Content-Disposition: attachment; filename="fname.ext"
     guard
         let f = headerFields,
         let contentDisposition = valueForCaseInsensitiveKey("content-disposition", fields: f),
         let field = contentDisposition.httpHeaderParts
-        else { return nil }
+    else { return nil }
     for part in field.parameters where part.attribute == "filename" {
         if let path = part.value {
-            return (path as NSString).pathComponents.map{ $0 == "/" ? "" : $0}.joined(separator: "_")
+            return (path as NSString).pathComponents.map { $0 == "/" ? "" : $0 }.joined(separator: "_")
         } else {
             return nil
         }
     }
     return nil
 }
+
 /// Parts corresponding to the `Content-Type` header field in a HTTP message.
 private struct ContentTypeComponents {
     /// For `text/html; charset=ISO-8859-4` this would be `text/html`
@@ -328,24 +309,25 @@ private struct ContentTypeComponents {
     /// `nil` when no `charset` is specified.
     let textEncoding: String?
 }
+
 extension ContentTypeComponents {
     /// Parses the `Content-Type` header field
     ///
     /// `Content-Type: text/html; charset=ISO-8859-4` would result in `("text/html", "ISO-8859-4")`, while
     /// `Content-Type: text/html` would result in `("text/html", nil)`.
-    init?(headerFields: [String : String]?) {
+    init?(headerFields: [String: String]?) {
         guard
             let f = headerFields,
             let contentType = valueForCaseInsensitiveKey("content-type", fields: f),
             let field = contentType.httpHeaderParts
-            else { return nil }
+        else { return nil }
         for parameter in field.parameters where parameter.attribute == "charset" {
             self.mimeType = field.value
             self.textEncoding = parameter.value
             return
         }
-        self.mimeType = field.value
-        self.textEncoding = nil
+        mimeType = field.value
+        textEncoding = nil
     }
 }
 
@@ -374,7 +356,7 @@ private struct ValueWithParameters {
 
 private extension String {
     /// Split the string at each ";", remove any quoting.
-    /// 
+    ///
     /// The trouble is if there's a
     /// ";" inside something that's quoted. And we can escape the separator and
     /// the quotes with a "\".
@@ -387,8 +369,8 @@ private extension String {
                 type = string
             } else {
                 if let r = string.range(of: "=") {
-                    let name = String(string[string.startIndex..<r.lowerBound]).trimmingCharacters(in: ws)
-                    let value = String(string[r.upperBound..<string.endIndex]).trimmingCharacters(in: ws)
+                    let name = String(string[string.startIndex ..< r.lowerBound]).trimmingCharacters(in: ws)
+                    let value = String(string[r.upperBound ..< string.endIndex]).trimmingCharacters(in: ws)
                     parameters.append(ValueWithParameters.Parameter(attribute: name, value: value))
                 } else {
                     let name = string.trimmingCharacters(in: ws)
@@ -396,10 +378,10 @@ private extension String {
                 }
             }
         }
-        
-        let escape = UnicodeScalar(0x5c)!    //  \
-        let quote = UnicodeScalar(0x22)!     //  "
-        let separator = UnicodeScalar(0x3b)! //  ;
+
+        let escape = UnicodeScalar(0x5C)! //  \
+        let quote = UnicodeScalar(0x22)! //  "
+        let separator = UnicodeScalar(0x3B)! //  ;
         enum State {
             case nonQuoted(String)
             case nonQuotedEscaped(String)
@@ -416,33 +398,34 @@ private extension String {
                 state = .nonQuotedEscaped(s + String(next))
             case (.nonQuoted(let s), quote):
                 state = .quoted(s)
-            case (.nonQuoted(let s), _):
+            case let (.nonQuoted(s), _):
                 state = .nonQuoted(s + String(next))
-                
-            case (.nonQuotedEscaped(let s), _):
+
+            case let (.nonQuotedEscaped(s), _):
                 state = .nonQuoted(s + String(next))
-                
+
             case (.quoted(let s), quote):
                 state = .nonQuoted(s)
             case (.quoted(let s), escape):
                 state = .quotedEscaped(s + String(next))
-            case (.quoted(let s), _):
+            case let (.quoted(s), _):
                 state = .quoted(s + String(next))
-            
-            case (.quotedEscaped(let s), _):
+
+            case let (.quotedEscaped(s), _):
                 state = .quoted(s + String(next))
             }
         }
         switch state {
-            case .nonQuoted(let s): append(s)
-            case .nonQuotedEscaped(let s): append(s)
-            case .quoted(let s): append(s)
-            case .quotedEscaped(let s): append(s)
+        case let .nonQuoted(s): append(s)
+        case let .nonQuotedEscaped(s): append(s)
+        case let .quoted(s): append(s)
+        case let .quotedEscaped(s): append(s)
         }
         guard let t = type else { return nil }
         return ValueWithParameters(value: t, parameters: parameters)
     }
 }
+
 private func valueForCaseInsensitiveKey(_ key: String, fields: [String: String]) -> String? {
     let kk = key.lowercased()
     for (k, v) in fields {

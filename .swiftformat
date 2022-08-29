@@ -1,0 +1,7 @@
+--indent 4
+--swiftversion 5.5
+--maxwidth 120
+--wraparguments before-first
+--funcattributes prev-line
+--typeattributes prev-line
+--varattributes prev-line

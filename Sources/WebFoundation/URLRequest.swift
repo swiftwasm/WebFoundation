@@ -12,28 +12,30 @@
 
 import Foundation
 
-public struct URLRequest: Equatable, Hashable {    
+public struct URLRequest: Equatable, Hashable {
     /// Creates and initializes a URLRequest with the given URL and cache policy.
     /// - parameter url: The URL for the request.
     /// - parameter cachePolicy: The cache policy for the request. Defaults to `.useProtocolCachePolicy`
-    /// - parameter timeoutInterval: The timeout interval for the request. See the commentary for the `timeoutInterval` for more information on timeout intervals. Defaults to 60.0
+    /// - parameter timeoutInterval: The timeout interval for the request. See the commentary for the `timeoutInterval`
+    /// for more information on timeout intervals. Defaults to 60.0
     public init(url: URL, cachePolicy: CachePolicy = .useProtocolCachePolicy, timeoutInterval: TimeInterval = 60.0) {
         self.url = url.absoluteURL
         self.cachePolicy = cachePolicy
         self.timeoutInterval = timeoutInterval
     }
-    
+
     /// The URL of the receiver.
     public var url: URL?
-    
+
     /// The cache policy of the receiver.
     public var cachePolicy: CachePolicy
 
-    //URLRequest.timeoutInterval should be given precedence over the URLSessionConfiguration.timeoutIntervalForRequest regardless of the value set,
-    // if it has been set at least once. Even though the default value is 60 ,if the user sets URLRequest.timeoutInterval
-    // to explicitly 60 then the precedence should be given to URLRequest.timeoutInterval.
+    // URLRequest.timeoutInterval should be given precedence over the URLSessionConfiguration.timeoutIntervalForRequest
+    // regardless of the value set, if it has been set at least once. Even though the default value is 60, if the user
+    // sets URLRequest.timeoutInterval to explicitly 60, then the precedence should be given to
+    // URLRequest.timeoutInterval.
     internal var isTimeoutIntervalSet = false
-    
+
     /// Returns the timeout interval of the receiver.
     /// - discussion: The timeout interval specifies the limit on the idle
     /// interval allotted to a request in the process of loading. The "idle
@@ -50,26 +52,26 @@ public struct URLRequest: Equatable, Hashable {
             isTimeoutIntervalSet = true
         }
     }
-    
+
     /// The main document URL associated with this load.
     /// - discussion: This URL is used for the cookie "same domain as main
     /// document" policy.
     public var mainDocumentURL: URL?
-    
+
     /// The URLRequest.NetworkServiceType associated with this request.
     /// Cannot be set using browser Fetch.
     public let networkServiceType: NetworkServiceType = .default
-    
+
     /// `true` if the receiver is allowed to use the built in cellular radios to
     /// satisfy the request, `false` otherwise.
     /// Cannot be set using browser Fetch.
     public let allowsCellularAccess = true
-    
+
     private var _httpMethod: String? = "GET"
 
     /// The HTTP request method of the receiver.
     public var httpMethod: String? {
-        get { return _httpMethod }
+        get { _httpMethod }
         set { _httpMethod = URLRequest._normalized(httpMethod: newValue) }
     }
 
@@ -87,11 +89,11 @@ public struct URLRequest: Equatable, Hashable {
         }
         return raw
     }
-    
+
     /// A dictionary containing all the HTTP header fields of the
     /// receiver.
-    public var allHTTPHeaderFields: [String : String]?
-    
+    public var allHTTPHeaderFields: [String: String]?
+
     /// Returns the value which corresponds to the given header field.
     ///
     /// Note that, in keeping with the HTTP RFC, HTTP header field
@@ -104,7 +106,7 @@ public struct URLRequest: Equatable, Hashable {
         guard let f = allHTTPHeaderFields else { return nil }
         return existingHeaderField(field, inHeaderFields: f)?.1
     }
-    
+
     /// Sets the value of the given HTTP header field.
     ///
     /// If a value was previously set for the given header
@@ -116,14 +118,14 @@ public struct URLRequest: Equatable, Hashable {
     public mutating func setValue(_ value: String?, forHTTPHeaderField field: String) {
         // Store the field name capitalized to match native Foundation
         let capitalizedFieldName = field.capitalized
-        var f: [String : String] = allHTTPHeaderFields ?? [:]
+        var f: [String: String] = allHTTPHeaderFields ?? [:]
         if let old = existingHeaderField(capitalizedFieldName, inHeaderFields: f) {
             f.removeValue(forKey: old.0)
         }
         f[capitalizedFieldName] = value
         allHTTPHeaderFields = f
     }
-    
+
     /// Adds an HTTP header field in the current header dictionary.
     ///
     /// This method provides a way to add values to header
@@ -138,7 +140,7 @@ public struct URLRequest: Equatable, Hashable {
     public mutating func addValue(_ value: String, forHTTPHeaderField field: String) {
         // Store the field name capitalized to match native Foundation
         let capitalizedFieldName = field.capitalized
-        var f: [String : String] = allHTTPHeaderFields ?? [:]
+        var f: [String: String] = allHTTPHeaderFields ?? [:]
         if let old = existingHeaderField(capitalizedFieldName, inHeaderFields: f) {
             f[old.0] = old.1 + "," + value
         } else {
@@ -146,23 +148,23 @@ public struct URLRequest: Equatable, Hashable {
         }
         allHTTPHeaderFields = f
     }
-    
+
     /// This data is sent as the message body of the request, as
     /// in done in an HTTP POST request.
     public var httpBody: Data?
-    
+
     @available(*, unavailable, message: "httpBodyStream is not yet available in WebFoundation")
     public var httpBodyStream: Any?
-    
+
     /// `true` if cookies will be sent with and set for this request; otherwise `false`.
     public var httpShouldHandleCookies = true
-    
+
     /// `true` if the receiver should transmit before the previous response
     /// is received.  `false` if the receiver should wait for the previous response
     /// before transmitting.
     /// Not Supported in WebFoundation
     public let httpShouldUsePipelining = false
-    
+
     public func hash(into hasher: inout Hasher) {
         hasher.combine(url)
         hasher.combine(mainDocumentURL)
@@ -170,8 +172,8 @@ public struct URLRequest: Equatable, Hashable {
         hasher.combine(httpBody)
         hasher.combine(httpShouldHandleCookies)
     }
-    
-    public static func ==(lhs: URLRequest, rhs: URLRequest) -> Bool {
+
+    public static func == (lhs: URLRequest, rhs: URLRequest) -> Bool {
         lhs.url == rhs.url
             && lhs.mainDocumentURL == rhs.mainDocumentURL
             && lhs.httpMethod == rhs.httpMethod
@@ -181,7 +183,7 @@ public struct URLRequest: Equatable, Hashable {
     }
 
     /// Returns an existing key-value pair inside the header fields if it exists.
-    private func existingHeaderField(_ key: String, inHeaderFields fields: [String : String]) -> (String, String)? {
+    private func existingHeaderField(_ key: String, inHeaderFields fields: [String: String]) -> (String, String)? {
         for (k, v) in fields {
             if k.lowercased() == key.lowercased() {
                 return (k, v)
@@ -191,7 +193,7 @@ public struct URLRequest: Equatable, Hashable {
     }
 }
 
-extension URLRequest : CustomStringConvertible, CustomDebugStringConvertible, CustomReflectable {
+extension URLRequest: CustomStringConvertible, CustomDebugStringConvertible, CustomReflectable {
     public var description: String {
         if let u = url {
             return u.description
@@ -201,7 +203,7 @@ extension URLRequest : CustomStringConvertible, CustomDebugStringConvertible, Cu
     }
 
     public var debugDescription: String {
-        return self.description
+        description
     }
 
     public var customMirror: Mirror {
@@ -221,7 +223,7 @@ extension URLRequest : CustomStringConvertible, CustomDebugStringConvertible, Cu
     }
 }
 
-extension URLRequest {
+public extension URLRequest {
     /// A cache policy
     ///
     /// The `URLRequest.CachePolicy` `enum` defines constants that
@@ -230,7 +232,7 @@ extension URLRequest {
     /// Specifically, these constants cover interactions that have to do
     /// with whether already-existing cache data is returned to satisfy a
     /// URL load request.
-    public enum CachePolicy : UInt {
+    enum CachePolicy: UInt {
         /// Specifies that the caching logic defined in the protocol
         /// implementation, if any, is used for a particular URL load request. This
         /// is the default policy for URL load requests.
@@ -244,7 +246,7 @@ extension URLRequest {
         /// caches so far as the protocol allows.  Unimplemented.
         case reloadIgnoringLocalAndRemoteCacheData // Unimplemented
         /// Older name for `NSURLRequestReloadIgnoringLocalCacheData`.
-        public static var reloadIgnoringCacheData: CachePolicy { return .reloadIgnoringLocalCacheData }
+        public static var reloadIgnoringCacheData: CachePolicy { .reloadIgnoringLocalCacheData }
         /// Specifies that the existing cache data should be used to satisfy a URL
         /// load request, regardless of its age or expiration date. However, if
         /// there is no existing data in the cache corresponding to a URL load
@@ -263,8 +265,8 @@ extension URLRequest {
         /// - Note: Unimplemented.
         case reloadRevalidatingCacheData // Unimplemented
     }
-    
-    public enum NetworkServiceType : UInt {
+
+    enum NetworkServiceType: UInt {
         /// Standard internet traffic
         case `default`
         /// Voice over IP control traffic
@@ -276,6 +278,6 @@ extension URLRequest {
         /// Voice data
         case voice
         /// Call Signaling
-        case networkServiceTypeCallSignaling 
+        case networkServiceTypeCallSignaling
     }
 }

@@ -8,10 +8,10 @@
 //
 
 import Foundation
-import WebFoundation
+import FoundationShim
 import XCTest
 
-class TestURLRequest: XCTestCase {
+final class TestURLRequest: XCTestCase {
     let url = URL(string: "http://swift.org")!
 
     func test_construction() {
@@ -196,21 +196,8 @@ class TestURLRequest: XCTestCase {
             byMutating: \URLRequest.url,
             throughValues: (0 ..< 20).map { URL(string: "https://example.org/\($0)")! }
         )
-        checkHashing_ValueType(
-            initialValue: URLRequest(url: url),
-            byMutating: \URLRequest.mainDocumentURL,
-            throughValues: (0 ..< 20).map { URL(string: "https://example.org/\($0)")! }
-        )
-        checkHashing_ValueType(
-            initialValue: URLRequest(url: url),
-            byMutating: \URLRequest.httpMethod,
-            throughValues: [
-                "HEAD", "POST", "PUT", "DELETE", "CONNECT", "TWIZZLE",
-                "REFUDIATE", "BUY", "REJECT", "UNDO", "SYNERGIZE",
-                "BUMFUZZLE", "ELUCIDATE",
-            ]
-        )
-        // allowsCellularAccess and httpShouldHandleCookies do
+        // `mainDocumentURL` and `httpMethod` don't contribute to the hash value on Apple platforms.
+        // `allowsCellularAccess` and `httpShouldHandleCookies` do
         // not have enough values to test them here.
     }
 
