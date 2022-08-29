@@ -8,12 +8,12 @@
 //
 
 import Foundation
-import XCTest
 import WebFoundation
+import XCTest
 
-class TestURLRequest : XCTestCase {
+class TestURLRequest: XCTestCase {
     let url = URL(string: "http://swift.org")!
-    
+
     func test_construction() {
         let request = URLRequest(url: url)
         // Match macOS Foundation responses
@@ -22,49 +22,49 @@ class TestURLRequest : XCTestCase {
         XCTAssertNil(request.allHTTPHeaderFields)
         XCTAssertNil(request.mainDocumentURL)
     }
-    
+
     func test_mutableConstruction() {
         let url = URL(string: "http://swift.org")!
         var request = URLRequest(url: url)
-        
-        //Confirm initial state matches NSURLRequest responses
+
+        // Confirm initial state matches NSURLRequest responses
         XCTAssertEqual(request.url, url)
         XCTAssertEqual(request.httpMethod, "GET")
         XCTAssertNil(request.allHTTPHeaderFields)
         XCTAssertNil(request.mainDocumentURL)
-        
+
         request.mainDocumentURL = url
         XCTAssertEqual(request.mainDocumentURL, url)
-        
+
         request.httpMethod = "POST"
         XCTAssertEqual(request.httpMethod, "POST")
-        
+
         let newURL = URL(string: "http://github.com")!
         request.url = newURL
         XCTAssertEqual(request.url, newURL)
     }
-    
+
     func test_headerFields() {
         var request = URLRequest(url: url)
-        
+
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         XCTAssertNotNil(request.allHTTPHeaderFields)
         XCTAssertNil(request.allHTTPHeaderFields?["accept"])
         XCTAssertEqual(request.allHTTPHeaderFields?["Accept"], "application/json")
-        
+
         // Setting "accept" should update "Accept"
         request.setValue("application/xml", forHTTPHeaderField: "accept")
         XCTAssertNil(request.allHTTPHeaderFields?["accept"])
         XCTAssertEqual(request.allHTTPHeaderFields?["Accept"], "application/xml")
-        
+
         // Adding to "Accept" should add to "Accept"
         request.addValue("text/html", forHTTPHeaderField: "Accept")
         XCTAssertEqual(request.allHTTPHeaderFields?["Accept"], "application/xml,text/html")
     }
-    
+
     func test_copy() {
         var mutableRequest = URLRequest(url: url)
-        
+
         let urlA = URL(string: "http://swift.org")!
         let urlB = URL(string: "http://github.com")!
         let postBody = "here is body".data(using: .utf8)
@@ -74,9 +74,9 @@ class TestURLRequest : XCTestCase {
         mutableRequest.httpMethod = "POST"
         mutableRequest.setValue("application/json", forHTTPHeaderField: "Accept")
         mutableRequest.httpBody = postBody
-        
+
         let requestCopy1 = mutableRequest
-        
+
         // Check that all attributes are copied and that the original ones are
         // unchanged:
         XCTAssertEqual(mutableRequest.mainDocumentURL, urlA)
@@ -89,7 +89,7 @@ class TestURLRequest : XCTestCase {
         XCTAssertEqual(requestCopy1.allHTTPHeaderFields?["Accept"], "application/json")
         XCTAssertEqual(mutableRequest.httpBody, postBody)
         XCTAssertEqual(requestCopy1.httpBody, postBody)
-        
+
         // Change the original, and check that the copy has unchanged
         // values:
         let urlC = URL(string: "http://apple.com")!
@@ -103,29 +103,29 @@ class TestURLRequest : XCTestCase {
         XCTAssertEqual(requestCopy1.url, urlB)
         XCTAssertEqual(requestCopy1.allHTTPHeaderFields?["Accept"], "application/json")
         XCTAssertEqual(requestCopy1.httpBody, postBody)
-        
+
         // Check that we can copy the copy:
         let requestCopy2 = requestCopy1
-        
+
         XCTAssertEqual(requestCopy2.mainDocumentURL, urlA)
         XCTAssertEqual(requestCopy2.httpMethod, "POST")
         XCTAssertEqual(requestCopy2.url, urlB)
         XCTAssertEqual(requestCopy2.allHTTPHeaderFields?["Accept"], "application/json")
         XCTAssertEqual(requestCopy2.httpBody, postBody)
     }
-    
+
     func test_mutableCopy_1() {
         var originalRequest = URLRequest(url: url)
-        
+
         let urlA = URL(string: "http://swift.org")!
         let urlB = URL(string: "http://github.com")!
         originalRequest.mainDocumentURL = urlA
         originalRequest.url = urlB
         originalRequest.httpMethod = "POST"
         originalRequest.setValue("application/json", forHTTPHeaderField: "Accept")
-        
+
         let requestCopy = originalRequest
-        
+
         // Change the original, and check that the copy has unchanged values:
         let urlC = URL(string: "http://apple.com")!
         let urlD = URL(string: "http://ibm.com")!
@@ -138,19 +138,19 @@ class TestURLRequest : XCTestCase {
         XCTAssertEqual(requestCopy.url, urlB)
         XCTAssertEqual(requestCopy.allHTTPHeaderFields?["Accept"], "application/json")
     }
-    
+
     func test_mutableCopy_2() {
         var originalRequest = URLRequest(url: url)
-        
+
         let urlA = URL(string: "http://swift.org")!
         let urlB = URL(string: "http://github.com")!
         originalRequest.mainDocumentURL = urlA
         originalRequest.url = urlB
         originalRequest.httpMethod = "POST"
         originalRequest.setValue("application/json", forHTTPHeaderField: "Accept")
-        
+
         var requestCopy = originalRequest
-        
+
         // Change the copy, and check that the original has unchanged values:
         let urlC = URL(string: "http://apple.com")!
         let urlD = URL(string: "http://ibm.com")!
@@ -163,13 +163,13 @@ class TestURLRequest : XCTestCase {
         XCTAssertEqual(originalRequest.url, urlB)
         XCTAssertEqual(originalRequest.allHTTPHeaderFields?["Accept"], "application/json")
     }
-    
+
     func test_mutableCopy_3() {
         let urlA = URL(string: "http://swift.org")!
         let originalRequest = URLRequest(url: urlA)
-        
+
         var requestCopy = originalRequest
-        
+
         // Change the copy, and check that the original has unchanged values:
         let urlC = URL(string: "http://apple.com")!
         let urlD = URL(string: "http://ibm.com")!
@@ -194,18 +194,22 @@ class TestURLRequest : XCTestCase {
         checkHashing_ValueType(
             initialValue: URLRequest(url: url),
             byMutating: \URLRequest.url,
-            throughValues: (0..<20).map { URL(string: "https://example.org/\($0)")! })
+            throughValues: (0 ..< 20).map { URL(string: "https://example.org/\($0)")! }
+        )
         checkHashing_ValueType(
             initialValue: URLRequest(url: url),
             byMutating: \URLRequest.mainDocumentURL,
-            throughValues: (0..<20).map { URL(string: "https://example.org/\($0)")! })
+            throughValues: (0 ..< 20).map { URL(string: "https://example.org/\($0)")! }
+        )
         checkHashing_ValueType(
             initialValue: URLRequest(url: url),
             byMutating: \URLRequest.httpMethod,
             throughValues: [
                 "HEAD", "POST", "PUT", "DELETE", "CONNECT", "TWIZZLE",
                 "REFUDIATE", "BUY", "REJECT", "UNDO", "SYNERGIZE",
-                "BUMFUZZLE", "ELUCIDATE"])
+                "BUMFUZZLE", "ELUCIDATE",
+            ]
+        )
         // allowsCellularAccess and httpShouldHandleCookies do
         // not have enough values to test them here.
     }
@@ -242,7 +246,7 @@ class TestURLRequest : XCTestCase {
             "patch": "patch",
             "foo": "foo",
             "BAR": "BAR",
-            ]
+        ]
 
         var request = URLRequest(url: url)
 

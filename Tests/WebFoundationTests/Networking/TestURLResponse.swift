@@ -8,11 +8,10 @@
 //
 
 import Foundation
-import XCTest
 import WebFoundation
+import XCTest
 
-class TestURLResponse : XCTestCase {
-
+class TestURLResponse: XCTestCase {
     let testURL = URL(string: "test")!
 
     func test_URL() {
