@@ -3,8 +3,9 @@
 
 🚨 Work in Progress 🚨
 
-## // TODO
+## Current status
 - [ ] Add detailed usage examples
+- [x] Networking: Basic async `URLSession` APIs
 - [ ] Networking: Task based APIs
 - [ ] Networking: Delegate based APIs
 - [ ] Networking: Socket streaming
