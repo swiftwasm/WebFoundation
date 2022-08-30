@@ -1,7 +1,7 @@
 import FoundationShim
 import XCTest
 
-final class DownloadTests: XCTestCase {
+class DownloadTests: XCTestCase {
     // Async tests aren't supported in SwiftWasm 5.6 and earlier.
     #if (os(WASI) && swift(>=5.7)) || canImport(Darwin)
         func testAsyncDownload() async throws {

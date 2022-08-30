@@ -7,11 +7,10 @@
 // See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
 //
 
-import Foundation
 import FoundationShim
 import XCTest
 
-final class TestURLResponse: XCTestCase {
+class TestURLResponse: XCTestCase {
     let testURL = URL(string: "test")!
 
     func test_URL() {
