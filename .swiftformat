@@ -5,3 +5,4 @@
 --funcattributes prev-line
 --typeattributes prev-line
 --varattributes prev-line
+--exclude Sources/WebFoundation/Upstream
