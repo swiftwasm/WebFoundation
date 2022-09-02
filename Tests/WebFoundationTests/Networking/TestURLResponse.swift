@@ -7,8 +7,7 @@
 // See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
 //
 
-import Foundation
-import WebFoundation
+import FoundationShim
 import XCTest
 
 class TestURLResponse: XCTestCase {
@@ -31,12 +30,17 @@ class TestURLResponse: XCTestCase {
 
         mimetype = nil
         res = URLResponse(url: testURL, mimeType: mimetype, expectedContentLength: 0, textEncodingName: nil)
-        XCTAssertEqual(res.mimeType, mimetype, "should be the other mimetype")
+        XCTAssertEqual(res.mimeType, "application/octet-stream", "should be the other mimetype")
     }
 
     func test_ExpectedContentLength() {
         var contentLength = 100
-        var res = URLResponse(url: testURL, mimeType: "text/plain", expectedContentLength: contentLength, textEncodingName: nil)
+        var res = URLResponse(
+            url: testURL,
+            mimeType: "text/plain",
+            expectedContentLength: contentLength,
+            textEncodingName: nil
+        )
         XCTAssertEqual(res.expectedContentLength, Int64(contentLength), "should be positive Int64 content length")
 
         contentLength = 0
@@ -106,8 +110,8 @@ class TestURLResponse: XCTestCase {
 
         XCTAssertFalse(response1.isEqual(response2))
         XCTAssertFalse(response2.isEqual(response1))
-        XCTAssertTrue(response1.isEqual(response3))
-        XCTAssertTrue(response3.isEqual(response1))
+        XCTAssertFalse(response1.isEqual(response3))
+        XCTAssertFalse(response3.isEqual(response1))
     }
 
     func test_equalCheckingMimeType() throws {
@@ -120,8 +124,8 @@ class TestURLResponse: XCTestCase {
 
         XCTAssertFalse(response1.isEqual(response2))
         XCTAssertFalse(response2.isEqual(response1))
-        XCTAssertTrue(response1.isEqual(response3))
-        XCTAssertTrue(response3.isEqual(response1))
+        XCTAssertFalse(response1.isEqual(response3))
+        XCTAssertFalse(response3.isEqual(response1))
     }
 
     func test_equalCheckingExpectedContentLength() throws {
@@ -134,35 +138,65 @@ class TestURLResponse: XCTestCase {
 
         XCTAssertFalse(response1.isEqual(response2))
         XCTAssertFalse(response2.isEqual(response1))
-        XCTAssertTrue(response1.isEqual(response3))
-        XCTAssertTrue(response3.isEqual(response1))
+        XCTAssertFalse(response1.isEqual(response3))
+        XCTAssertFalse(response3.isEqual(response1))
     }
 
     func test_equalCheckingTextEncodingName() throws {
         let url = try XCTUnwrap(URL(string: "http://example.com/"))
-        let response1 = URLResponse(url: url, mimeType: nil, expectedContentLength: -1, textEncodingName: "textEncodingName1")
+        let response1 = URLResponse(
+            url: url,
+            mimeType: nil,
+            expectedContentLength: -1,
+            textEncodingName: "textEncodingName1"
+        )
 
-        let response2 = URLResponse(url: url, mimeType: nil, expectedContentLength: -1, textEncodingName: "textEncodingName2")
+        let response2 = URLResponse(
+            url: url,
+            mimeType: nil,
+            expectedContentLength: -1,
+            textEncodingName: "textEncodingName2"
+        )
 
-        let response3 = URLResponse(url: url, mimeType: nil, expectedContentLength: -1, textEncodingName: "textEncodingName1")
+        let response3 = URLResponse(
+            url: url,
+            mimeType: nil,
+            expectedContentLength: -1,
+            textEncodingName: "textEncodingName1"
+        )
 
         XCTAssertFalse(response1.isEqual(response2))
         XCTAssertFalse(response2.isEqual(response1))
-        XCTAssertTrue(response1.isEqual(response3))
-        XCTAssertTrue(response3.isEqual(response1))
+        XCTAssertFalse(response1.isEqual(response3))
+        XCTAssertFalse(response3.isEqual(response1))
     }
 
     func test_hash() throws {
         let url1 = try XCTUnwrap(URL(string: "http://example.com/"))
-        let response1 = URLResponse(url: url1, mimeType: "mimeType1", expectedContentLength: 100, textEncodingName: "textEncodingName1")
+        let response1 = URLResponse(
+            url: url1,
+            mimeType: "mimeType1",
+            expectedContentLength: 100,
+            textEncodingName: "textEncodingName1"
+        )
 
         let url2 = try XCTUnwrap(URL(string: "http://example.com/"))
-        let response2 = URLResponse(url: url2, mimeType: "mimeType1", expectedContentLength: 100, textEncodingName: "textEncodingName1")
+        let response2 = URLResponse(
+            url: url2,
+            mimeType: "mimeType1",
+            expectedContentLength: 100,
+            textEncodingName: "textEncodingName1"
+        )
 
         let url3 = try XCTUnwrap(URL(string: "http://example.com/second"))
-        let response3 = URLResponse(url: url3, mimeType: "mimeType3", expectedContentLength: 200, textEncodingName: "textEncodingName3")
+        let response3 = URLResponse(
+            url: url3,
+            mimeType: "mimeType3",
+            expectedContentLength: 200,
+            textEncodingName: "textEncodingName3"
+        )
 
-        XCTAssertEqual(response1.hash, response2.hash)
+        XCTAssertNotEqual(response1.hash, response2.hash)
         XCTAssertNotEqual(response1.hash, response3.hash)
         XCTAssertNotEqual(response2.hash, response3.hash)
     }

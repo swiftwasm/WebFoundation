@@ -1,0 +1,32 @@
+name: Build and test
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  macos_browser_test:
+    strategy:
+      matrix:
+        include:
+          - os: macos-12
+            xcode: Xcode_13.4.1
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run the test suite on macOS
+        shell: bash
+        run: |
+          set -ex
+          sudo xcode-select --switch /Applications/${{ matrix.xcode }}.app/Contents/Developer/
+
+          swift test
+
+          brew install swiftwasm/tap/carton
+
+          carton test --environment defaultBrowser
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

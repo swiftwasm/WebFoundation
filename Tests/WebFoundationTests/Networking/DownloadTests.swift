@@ -1,7 +1,4 @@
-import Foundation
-import JavaScriptEventLoop
-import JavaScriptKit
-import WebFoundation
+import FoundationShim
 import XCTest
 
 class DownloadTests: XCTestCase {
@@ -9,7 +6,7 @@ class DownloadTests: XCTestCase {
 	#if (os(WASI) && swift(>=5.7)) || canImport(Darwin)
 		func testAsyncDownload() async throws {
 			let url = URL(string: "https://jsonplaceholder.typicode.com/posts")!
-			let (data, response) = try await URLSession.shared.data(from: url)
+            let (data, _) = try await URLSession.shared.data(from: url)
 			let posts = try JSONDecoder().decode([Post].self, from: data)
 			XCTAssertFalse(posts.isEmpty)
 			XCTAssertFalse(posts.first!.title.isEmpty)
@@ -18,10 +15,10 @@ class DownloadTests: XCTestCase {
 }
 
 struct Post: Decodable {
-	let id: Int
-	let title: String
-	let body: String
-	let userId: Int
+    let id: Int
+    let title: String
+    let body: String
+    let userId: Int
 }
 
 struct NewPost: Encodable {
