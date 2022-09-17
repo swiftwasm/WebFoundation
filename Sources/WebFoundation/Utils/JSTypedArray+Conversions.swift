@@ -18,7 +18,7 @@ extension Data {
     func blob() -> JSObject {
         let typedArray = JSTypedArray(self)
         let blobConstructor = JSObject.global.Blob.function!
-        let blob = blobConstructor.new(typedArray)
+        let blob = blobConstructor.new([typedArray])
         return blob
     }
 }
