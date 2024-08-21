@@ -14,7 +14,7 @@ let package = Package(
     dependencies: [
         .package(
             url: "https://github.com/swiftwasm/JavaScriptKit.git",
-            .upToNextMajor(from: "0.16.0")
+            from: "0.19.0"
         ),
     ],
     targets: [
